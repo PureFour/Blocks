@@ -12,46 +12,82 @@ var engine;
 var world;
 var ground;
 var mouse;
+var mConstraint;
+
 var boxy =
 {
   position :
   {
-    x : 320,
+    x : 250,
     y : 80
   },
   on : true
 }
 var boxy_width = 75;
-var vel = 3;
+var boxy_vel = 5;
 var Boxes = [];
-var mConstraint;
+//boundaries
+var boundaries =
+{
+  position_L :
+  {
+    x : 100,
+    y : 250
+  },
+  position_R :
+  {
+    x : 500,
+    y : 250
+  },
+  size :
+  {
+    x : 30,
+    y : 200
+  }
+}
 
+//
 //sound
 var click_sound;
 var lose_sound;
 var win_sound;
 //
-
+function preload()
+{
+   click_sound = new Audio("click_sound.wav");
+   lose_sound = new Audio("lose_sound.wav");
+   win_sound = new Audio("win_sound.wav");
+}
 function setup()
 {
-  const canvas = createCanvas(1000, 500);
+  const canvas = createCanvas(600, 500);
+  //canvas.position(560, 180);
   engine = Engine.create();
   world = engine.world;
+  world.gravity.y = 1;
+  frameRate(60);
 
   function collision()
   {
-
     boxy_width = random(25, 100);
     boxy.on = true;
     Boxes[Boxes.length - 1].body.isStatic = true;
-    // if(Boxes.length > 1)
-    //   Boxes[Boxes.length - 1].body.position.y = Boxes[Boxes.length - 2].body.position.y - 25;
+    //play sound!
+    if(click_sound) click_sound.play();
+    else console.log("Audio not working!");
+    //getting harder!
+
+    //checkWin
+    checkWin();
+    //checkLose
+    checkLose();
   }
   Events.on(engine,'collisionStart', collision);
 
+  //initializing boundaries
   ground = new Bodies.rectangle(width/2, height - 10, width, 30, {isStatic : true});
-  ground1 = new Bodies.rectangle(width/4, height/2, 30, 200, {isStatic : true});
-  ground2 = new Bodies.rectangle(width/2 + width/4, height/2, 30, 200, {isStatic : true});
+  boundaryL = new Bodies.rectangle(boundaries.position_L.x, boundaries.position_L.y, boundaries.size.x, boundaries.size.y, {isStatic : true});
+  boundaryR = new Bodies.rectangle(boundaries.position_R.x, boundaries.position_R.y, boundaries.size.x, boundaries.size.y, {isStatic : true});
   //mouse section
   const mouse = Mouse.create(canvas.elt);
   const options = {
@@ -63,18 +99,19 @@ function setup()
  mConstraint = MouseConstraint.create(engine, options);
  World.add(world, mConstraint);
  World.add(world, ground);
- World.add(world, ground1);
- World.add(world, ground2);
+ World.add(world, boundaryL);
+ World.add(world, boundaryR);
 }
 function draw()
 {
+  setInterval(function() { Engine.update(engine, 20 / 60); }, 10 / 60);
   background(29,32,43);
-  Engine.update(engine);
+  //Engine.update(engine);
   rectMode(CENTER);
   fill(255,0,0);
   rect(ground.position.x, ground.position.y, width, 30);
-  rect(ground1.position.x, ground1.position.y, 30, 200);
-  rect(ground2.position.x, ground2.position.y, 30, 200);
+  rect(boundaries.position_L.x, boundaries.position_L.y, 30, 200);
+  rect(boundaries.position_R.x, boundaries.position_R.y, 30, 200);
 
   for(let i = 0; i < Boxes.length; i++)
   {
@@ -87,16 +124,16 @@ function draw()
       i--;
       console.log(Boxes.length);
     }
-    // if(!Boxes[i].body.isStatic)
-    //   Boxes[i].check_ground();
+
   }
   fill(255);
   strokeWeight(1);
+  //this is moving pad on top screen
   if(boxy.on)
   {
     rect(boxy.position.x, boxy.position.y, boxy_width, 25);
-    if(boxy.position.x > 700 || boxy.position.x < 300) vel = -vel;
-    boxy.position.x += vel;
+    if(boxy.position.x > boundaryR.position.x - 50 || boxy.position.x < boundaryL.position.x + 50) boxy_vel = -boxy_vel;
+    boxy.position.x += boxy_vel;
   }
 }
 function mouseDragged()
@@ -107,12 +144,35 @@ function keyPressed()
 {
   if(keyCode === 32 && boxy.on)
   {
+  //  getAudioContext().resume();
     Boxes.push(new Box(boxy.position.x, boxy.position.y, boxy_width, 25));
     boxy.on = false;
   }
+  else {}
+
   return false;
 }
 function mouseClicked()
 {
 //  Boxes.push(new Box(mouseX, mouseY, 25, 25));
+}
+function checkWin()
+{
+  if(Boxes.length > 12)
+  {
+    noLoop();
+    console.log("WIN!");
+    win_sound.play();
+  }
+}
+function checkLose()
+{
+  const last_one = Boxes[Boxes.length - 1];
+  if(Boxes.length > 1)
+  if(last_one.body.position.y == Boxes[Boxes.length - 2].body.position.y || last_one.body.position.y > 450)
+  {
+    noLoop();
+    console.log("LOSE!");
+    lose_sound.play();
+  }
 }

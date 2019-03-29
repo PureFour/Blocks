@@ -4,9 +4,9 @@ class Box
   {
     const options =
     {
-      restitution : 0,
+      //restitution : 0,
       friction : 1,
-      mass : 1
+    //  mass : 1
     }
     this.body = Bodies.rectangle(x, y, width, height, options); //creating physics body
     World.add(world, this.body); //adding to world
