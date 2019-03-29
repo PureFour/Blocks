@@ -154,7 +154,12 @@ function keyPressed()
 }
 function mouseClicked()
 {
-//  Boxes.push(new Box(mouseX, mouseY, 25, 25));
+  if(boxy.on)
+  {
+  //  getAudioContext().resume();
+    Boxes.push(new Box(boxy.position.x, boxy.position.y, boxy_width, 25));
+    boxy.on = false;
+  }
 }
 function checkWin()
 {
