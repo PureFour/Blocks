@@ -160,6 +160,8 @@ function mouseClicked()
     Boxes.push(new Box(boxy.position.x, boxy.position.y, boxy_width, 25));
     boxy.on = false;
   }
+  else {}
+  return false;
 }
 function checkWin()
 {
